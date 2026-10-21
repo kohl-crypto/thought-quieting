@@ -1,0 +1,546 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Thought Quieting</title>
+<meta name="description" content="A guided 20-minute Thought Quieting exercise with timed steps, optional voice recording and a summary.">
+<meta name="theme-color" content="#f6f3ee" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#16181d" media="(prefers-color-scheme: dark)">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="mobile-web-app-capable" content="yes">
+<style>
+:root{
+  --bg:#f6f3ee; --card:#ffffff; --ink:#22262e; --muted:#6b7280; --line:#e4dfd6;
+  --accent:#3f6f73; --accent-ink:#ffffff; --soft:#e7efee; --warn:#a2552d; --rec:#c2413b;
+  --ring-track:#e4dfd6; --shadow:0 1px 2px rgba(0,0,0,.05),0 4px 16px rgba(0,0,0,.05);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#16181d; --card:#20232a; --ink:#eceae6; --muted:#9aa0aa; --line:#30343c;
+    --accent:#7fb3b5; --accent-ink:#10292a; --soft:#22393a; --warn:#e0a27a; --rec:#ef6b63;
+    --ring-track:#30343c; --shadow:none;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#16181d; --card:#20232a; --ink:#eceae6; --muted:#9aa0aa; --line:#30343c;
+  --accent:#7fb3b5; --accent-ink:#10292a; --soft:#22393a; --warn:#e0a27a; --rec:#ef6b63;
+  --ring-track:#30343c; --shadow:none;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:17px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  -webkit-tap-highlight-color:transparent;min-height:100dvh}
+main{max-width:560px;margin:0 auto;padding:max(16px,env(safe-area-inset-top)) 16px max(24px,env(safe-area-inset-bottom))}
+h1{font-size:28px;line-height:1.2;margin:8px 0 4px;font-weight:650}
+h2{font-size:20px;margin:0 0 8px;font-weight:650}
+p{margin:0 0 12px}
+.muted{color:var(--muted)}
+.small{font-size:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin:12px 0;box-shadow:var(--shadow)}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 18px;border-radius:12px;
+  border:1px solid var(--line);background:var(--card);font-weight:600}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:transparent}
+.btn.wide{width:100%}
+.btn:disabled{opacity:.45;cursor:default}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.row>.btn{flex:1}
+.verse{font-style:italic;color:var(--muted);margin:4px 0 0}
+.verse span{display:block;font-style:normal;font-size:14px;margin-top:2px}
+[hidden]{display:none!important}
+
+/* home */
+.start{display:flex;flex-direction:column;align-items:center;justify-content:center;width:200px;height:200px;margin:28px auto 8px;
+  border-radius:50%;background:var(--accent);color:var(--accent-ink);font-size:24px;font-weight:700;
+  box-shadow:0 0 0 12px var(--soft)}
+.start small{font-size:15px;font-weight:500;opacity:.9;margin-top:2px}
+.start:active{transform:scale(.98)}
+.steps-list{margin:0;padding:0;list-style:none}
+.steps-list li{display:flex;gap:12px;padding:8px 0;border-top:1px solid var(--line)}
+.steps-list li:first-child{border-top:0}
+.steps-list b{font-weight:600}
+.steps-list .n{flex:none;width:26px;height:26px;border-radius:50%;background:var(--soft);color:var(--ink);display:grid;place-items:center;font-size:14px;font-weight:600}
+.steps-list .t{margin-left:auto;color:var(--muted);font-size:14px;white-space:nowrap}
+.seg{display:flex;background:var(--soft);border-radius:12px;padding:4px;gap:4px}
+.seg button{flex:1;min-height:40px;border-radius:9px;font-size:15px;font-weight:600;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--card);color:var(--ink);box-shadow:var(--shadow)}
+.switch{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:44px}
+.switch input{width:22px;height:22px;accent-color:var(--accent)}
+.hist button{display:flex;width:100%;justify-content:space-between;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--line);text-align:left}
+.hist button:first-child{border-top:0}
+.hist .when{font-weight:600}
+.hist .gist{color:var(--muted);font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:60vw;display:block}
+
+/* session */
+.top{display:flex;align-items:center;gap:12px}
+.top .x{min-height:44px;min-width:44px;border-radius:12px;font-size:22px;color:var(--muted)}
+.dots{display:flex;gap:6px;flex:1}
+.dots i{flex:1;height:6px;border-radius:3px;background:var(--line)}
+.dots i.done{background:var(--accent)}
+.dots i.now{background:linear-gradient(90deg,var(--accent) var(--p,0%),var(--line) var(--p,0%))}
+.stepno{color:var(--muted);font-size:14px;font-weight:600;letter-spacing:.02em;margin:18px 0 2px;text-transform:uppercase}
+.q{font-size:23px;line-height:1.35;font-weight:600;margin:0 0 8px}
+.help{color:var(--muted);font-size:15px}
+.timer{position:relative;width:180px;height:180px;margin:14px auto 6px}
+.timer svg{width:100%;height:100%;transform:rotate(-90deg)}
+.timer .track{stroke:var(--ring-track)}
+.timer .bar{stroke:var(--accent);transition:stroke-dashoffset .25s linear}
+.timer .lbl{position:absolute;inset:0;display:grid;place-items:center;text-align:center}
+.timer .left{font-size:40px;font-weight:650;font-variant-numeric:tabular-nums;line-height:1}
+.timer .of{font-size:13px;color:var(--muted);margin-top:4px}
+.breath{width:180px;height:180px;margin:14px auto 6px;display:grid;place-items:center;position:relative}
+.breath .ball{width:70px;height:70px;border-radius:50%;background:var(--soft);border:2px solid var(--accent);transition:transform 4s ease-in-out}
+.breath .ball.in{transform:scale(2.3)}
+.breath .word{position:absolute;font-weight:600;color:var(--ink)}
+.breath .left{position:absolute;bottom:-22px;font-size:14px;color:var(--muted);font-variant-numeric:tabular-nums}
+.recbtn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:56px;border-radius:14px;
+  background:var(--soft);font-weight:650;font-size:18px;border:1px solid transparent}
+#answerBox .recbtn{margin-bottom:12px}
+.recbtn .dot{width:14px;height:14px;border-radius:50%;background:var(--rec)}
+.recbtn.on{background:var(--rec);color:#fff}
+.recbtn.on .dot{background:#fff;animation:blink 1s infinite}
+@keyframes blink{50%{opacity:.25}}
+textarea{width:100%;min-height:96px;font:inherit;color:inherit;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:12px;resize:vertical}
+textarea:focus,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.interim:empty{display:none}
+.steps-list .mic{font-size:14px;opacity:.7}
+.interim{color:var(--muted);font-style:italic;min-height:1.5em;font-size:15px}
+.note{font-size:14px;color:var(--warn)}
+.scale{display:grid;grid-template-columns:repeat(11,1fr);gap:4px;margin-top:8px}
+.scale button{min-height:40px;border-radius:8px;background:var(--soft);font-weight:600;font-size:15px}
+.scale button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.scale-ends{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-top:4px}
+.timesup{background:var(--soft);border-radius:12px;padding:12px 14px;font-weight:600;margin:10px 0}
+.nextbar{margin:18px 0 4px}
+
+/* summary */
+.sum h3{font-size:15px;margin:0 0 4px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.02em}
+.sum .txt{white-space:pre-wrap;margin:0}
+.sum audio{width:100%;margin-top:8px;height:40px}
+.weight{display:flex;align-items:center;gap:12px;font-size:28px;font-weight:700}
+.weight .arrow{color:var(--muted);font-size:20px}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-size:15px;z-index:9}
+.foot{font-size:13px;color:var(--muted);text-align:center;margin-top:24px}
+</style>
+</head>
+<body>
+<main>
+
+<!-- HOME -->
+<section id="home">
+  <h1>Thought Quieting</h1>
+  <p class="verse">“Search me, O God, and know my heart; test me and know my anxious thoughts.”<span>Psalm 139:23 (NIV)</span></p>
+
+  <button class="start" id="startBtn" aria-label="Start the exercise">Start<small id="startLen">20 minutes</small></button>
+  <p class="muted small" style="text-align:center">Each question appears on its own. When its time is up, a soft chime plays and the next one appears.</p>
+
+  <div class="card">
+    <h2>The six steps</h2>
+    <ol class="steps-list" id="stepsList"></ol>
+  </div>
+
+  <div class="card">
+    <h2>Settings</h2>
+    <p class="muted small" style="margin-bottom:8px">Time for each step</p>
+    <div class="seg" id="timingSeg" role="group" aria-label="Time for each step">
+      <button data-t="book" aria-pressed="true">Book times</button>
+      <button data-t="4">4 min each</button>
+      <button data-t="5">5 min each</button>
+    </div>
+    <label class="switch" style="margin-top:10px"><span>Read each question aloud</span><input type="checkbox" id="optSpeak" checked></label>
+    <label class="switch"><span>Chime and vibrate between steps</span><input type="checkbox" id="optChime" checked></label>
+    <label class="switch"><span>Keep the screen on</span><input type="checkbox" id="optWake" checked></label>
+  </div>
+
+  <div class="card" id="histCard" hidden>
+    <h2>Past sessions</h2>
+    <div class="hist" id="hist"></div>
+  </div>
+
+  <p class="foot">Based on Exercise 25 in <i>THRIVEtoday, Track Two</i>.<br>Everything you record stays on this phone.</p>
+</section>
+
+<!-- SESSION -->
+<section id="session" hidden>
+  <div class="top">
+    <button class="x" id="quitBtn" aria-label="Stop the exercise">✕</button>
+    <div class="dots" id="dots" aria-hidden="true"></div>
+  </div>
+
+  <p class="stepno" id="stepNo">Step 1 of 6</p>
+  <p class="q" id="stepQ"></p>
+  <p class="help" id="stepHelp"></p>
+
+  <div class="timer" id="timerBox">
+    <svg viewBox="0 0 100 100" aria-hidden="true">
+      <circle class="track" cx="50" cy="50" r="45" fill="none" stroke-width="6"/>
+      <circle class="bar" id="ring" cx="50" cy="50" r="45" fill="none" stroke-width="6" stroke-linecap="round" stroke-dasharray="282.74" stroke-dashoffset="0"/>
+    </svg>
+    <div class="lbl"><div><div class="left" id="left" role="timer" aria-live="off">2:00</div><div class="of" id="of">of 2 min</div></div></div>
+  </div>
+
+  <div class="breath" id="breathBox" hidden aria-hidden="true">
+    <div class="ball" id="ball"></div><div class="word" id="breathWord">Breathe in</div><div class="left" id="breathLeft"></div>
+  </div>
+
+  <div class="nextbar">
+    <div class="row">
+      <button class="btn" id="pauseBtn">Pause</button>
+      <button class="btn primary" id="nextBtn">Next question</button>
+    </div>
+  </div>
+
+  <div class="timesup" id="timesUp" hidden>Time’s up. Finish your thought, then stop recording to go on.</div>
+
+  <div id="answerBox" class="card" hidden>
+    <button class="recbtn" id="recBtn"><span class="dot"></span><span id="recLbl">Record my answer</span></button>
+    <p class="interim" id="interim" aria-live="polite"></p>
+    <p class="note" id="recNote" hidden></p>
+    <label class="muted small" for="answer" id="answerLbl">Or type a few words (optional)</label>
+    <textarea id="answer" placeholder="Your words show up here as you speak. You can edit them."></textarea>
+    <div id="weightBox" hidden>
+      <p class="muted small" style="margin:12px 0 0">How heavy does this feel right now?</p>
+      <div class="scale" id="weightBefore"></div>
+      <div class="scale-ends"><span>0 · light</span><span>10 · crushing</span></div>
+    </div>
+  </div>
+
+</section>
+
+<!-- SUMMARY -->
+<section id="summary" hidden>
+  <h1>Your summary</h1>
+  <p class="muted" id="sumWhen"></p>
+
+  <div class="card" id="afterCard">
+    <h2>How heavy does it feel now?</h2>
+    <div class="scale" id="weightAfter"></div>
+    <div class="scale-ends"><span>0 · light</span><span>10 · crushing</span></div>
+  </div>
+
+  <div class="card" id="weightShow" hidden>
+    <h2>How heavy it felt</h2>
+    <div class="weight"><span id="wB">–</span><span class="arrow">→</span><span id="wA">–</span><span class="muted small" style="font-weight:500">out of 10</span></div>
+  </div>
+
+  <div id="sumCards" class="sum"></div>
+
+  <div class="row" style="margin-top:8px">
+    <button class="btn" id="copyBtn">Copy</button>
+    <button class="btn" id="shareBtn">Share</button>
+  </div>
+  <button class="btn primary wide" id="doneBtn" style="margin-top:10px">Done</button>
+  <button class="btn wide" id="delBtn" style="margin-top:10px;color:var(--warn)">Delete this session</button>
+</section>
+
+</main>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+"use strict";
+const VERSION = "1.0.0";
+
+// The exercise, in our own words. Minutes are the book's timings.
+const STEPS = [
+  { id: "ready", min: 2, title: "Get ready",
+    q: "Read through the steps ahead and practice the RC nodding sequence.",
+    help: "Get comfortable. Nothing to record yet." },
+  { id: "event", min: 2, title: "What’s on your mind", rec: true, weight: true, label: "What was on my mind",
+    q: "What event or issue has been on your mind lately? What negative thoughts, and what conclusion, come with it?",
+    help: "Example: “I keep replaying that phone call.” Conclusion: “I always say the wrong thing.”" },
+  { id: "logic", min: 3, title: "Talk back", rec: true, label: "Talking back with logic",
+    q: "Argue with those thoughts. Using logic, why doesn’t it make sense to believe that conclusion?",
+    help: "Example: “One call went badly. Most of my calls go fine.”" },
+  { id: "jesus", min: 5, title: "With Jesus", rec: true, label: "What Jesus showed me",
+    q: "Take a moment to thank Jesus for something. Then ask Him: are these thoughts true? What is Your view of this?",
+    help: "Be quiet and notice what comes. There’s no wrong answer." },
+  { id: "breathe", min: 3, title: "Breathe", breathe: true,
+    q: "Breathe slowly and deeply from your belly, not your chest. Let your body relax.",
+    help: "Follow the circle: breathe in as it grows, out as it shrinks." },
+  { id: "share", min: 5, title: "Share", rec: true, label: "What I noticed",
+    q: "Share what happened with your partner. Which helped more: arguing with logic, or talking with Jesus?",
+    help: "No partner today? Say it out loud here." },
+];
+
+const $ = id => document.getElementById(id);
+const params = new URLSearchParams(location.search);
+const SPEED = Math.max(1, +params.get("speed") || 1); // testing only: ?speed=60 makes a minute last a second
+
+// ---------- storage ----------
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
+};
+const idb = (() => {
+  let dbp;
+  const open = () => dbp || (dbp = new Promise((res, rej) => {
+    const r = indexedDB.open("tq-audio", 1);
+    r.onupgradeneeded = () => r.result.createObjectStore("clips");
+    r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
+  }));
+  const tx = (mode, fn) => open().then(db => new Promise((res, rej) => {
+    const t = db.transaction("clips", mode), s = t.objectStore("clips"), r = fn(s);
+    t.oncomplete = () => res(r && r.result); t.onerror = () => rej(t.error);
+  }));
+  return {
+    put: (k, v) => tx("readwrite", s => s.put(v, k)).catch(() => {}),
+    get: k => tx("readonly", s => s.get(k)).catch(() => null),
+    del: k => tx("readwrite", s => s.delete(k)).catch(() => {}),
+  };
+})();
+
+const settings = Object.assign({ timing: "book", speak: true, chime: true, wake: true }, store.get("tq-settings", {}));
+const saveSettings = () => store.set("tq-settings", settings);
+const sessions = () => store.get("tq-sessions", []);
+const saveSessions = list => store.set("tq-sessions", list);
+
+const stepMin = s => settings.timing === "book" ? s.min : +settings.timing;
+const totalMin = () => STEPS.reduce((a, s) => a + stepMin(s), 0);
+const fmt = ms => { const t = Math.max(0, Math.ceil(ms / 1000)); return Math.floor(t / 60) + ":" + String(t % 60).padStart(2, "0"); };
+
+// ---------- home ----------
+function renderHome() {
+  $("startLen").textContent = totalMin() + " minutes";
+  $("stepsList").innerHTML = STEPS.map((s, i) =>
+    `<li><span class="n">${i + 1}</span><span><b>${s.title}</b>${s.rec ? ' <span class="mic" title="You can record your answer" aria-label="you can record">🎙</span>' : ""}</span><span class="t">${stepMin(s)} min</span></li>`).join("");
+  document.querySelectorAll("#timingSeg button").forEach(b => b.setAttribute("aria-pressed", b.dataset.t === settings.timing));
+  $("optSpeak").checked = settings.speak; $("optChime").checked = settings.chime; $("optWake").checked = settings.wake;
+  const list = sessions();
+  $("histCard").hidden = !list.length;
+  $("hist").innerHTML = list.slice().reverse().map(s => {
+    const gist = (s.answers.event && s.answers.event.text) || "Audio only";
+    return `<button data-id="${s.id}"><span><span class="when">${new Date(s.started).toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })}</span><span class="gist">${esc(gist)}</span></span><span class="muted">›</span></button>`;
+  }).join("");
+}
+function esc(t) { return String(t).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
+
+$("timingSeg").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; settings.timing = b.dataset.t; saveSettings(); renderHome(); });
+["Speak", "Chime", "Wake"].forEach(k => $("opt" + k).addEventListener("change", e => { settings[k.toLowerCase()] = e.target.checked; saveSettings(); }));
+$("hist").addEventListener("click", e => { const b = e.target.closest("button[data-id]"); if (b) showSummary(sessions().find(s => s.id === b.dataset.id), true); });
+
+function show(id) { ["home", "session", "summary"].forEach(s => $(s).hidden = s !== id); scrollTo(0, 0); }
+
+// ---------- sound, voice, wake lock ----------
+let actx;
+function chime() {
+  if (settings.chime && navigator.vibrate) navigator.vibrate([180, 90, 180]);
+  if (!settings.chime) return;
+  try {
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+    [523.25, 783.99].forEach((f, i) => {
+      const o = actx.createOscillator(), g = actx.createGain(), t = actx.currentTime + i * 0.35;
+      o.type = "sine"; o.frequency.value = f; o.connect(g); g.connect(actx.destination);
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.25, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + 1.6);
+      o.start(t); o.stop(t + 1.7);
+    });
+  } catch {}
+}
+function say(text) {
+  if (!settings.speak || !window.speechSynthesis) return;
+  try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text); u.rate = 0.92; speechSynthesis.speak(u); } catch {}
+}
+let wakeLock = null;
+async function wake(on) {
+  try {
+    if (on && settings.wake && navigator.wakeLock && !wakeLock) { wakeLock = await navigator.wakeLock.request("screen"); wakeLock.addEventListener("release", () => wakeLock = null); }
+    if (!on && wakeLock) { await wakeLock.release(); wakeLock = null; }
+  } catch {}
+}
+document.addEventListener("visibilitychange", () => { if (!document.hidden && S) wake(true); });
+
+// ---------- session ----------
+let S = null;         // the session being run
+let idx = 0, endAt = 0, pausedLeft = 0, paused = false, timeUp = false, ticker = 0, breathT = 0;
+
+$("startBtn").addEventListener("click", () => {
+  try { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); actx.resume(); } catch {} // phones only allow sound after a tap
+  S = { id: Date.now().toString(36), started: Date.now(), timing: settings.timing, answers: {}, before: null, after: null };
+  $("dots").innerHTML = STEPS.map(() => "<i></i>").join("");
+  show("session"); wake(true); startStep(0);
+});
+
+function startStep(i) {
+  stopRec(true);
+  idx = i; timeUp = false; paused = false;
+  const s = STEPS[i], ms = stepMin(s) * 60000 / SPEED;
+  endAt = Date.now() + ms; S.stepMs = ms;
+  $("stepNo").textContent = `Step ${i + 1} of ${STEPS.length} · ${s.title}`;
+  $("stepQ").textContent = s.q;
+  $("stepHelp").textContent = s.help;
+  $("of").textContent = `of ${stepMin(s)} min`;
+  $("timesUp").hidden = true;
+  $("pauseBtn").textContent = "Pause";
+  $("nextBtn").textContent = i === STEPS.length - 1 ? "Finish" : "Next question";
+  $("timerBox").hidden = !!s.breathe; $("breathBox").hidden = !s.breathe;
+  $("answerBox").hidden = !s.rec;
+  $("weightBox").hidden = !s.weight;
+  $("recNote").hidden = true; $("interim").textContent = "";
+  if (s.rec) {
+    const a = S.answers[s.id] || (S.answers[s.id] = { text: "", clips: [] });
+    $("answer").value = a.text;
+    $("recLbl").textContent = a.clips.length ? "Record more" : "Record my answer";
+  }
+  if (s.weight) drawScale($("weightBefore"), S.before, v => { S.before = v; });
+  document.querySelectorAll("#dots i").forEach((d, k) => { d.className = k < i ? "done" : k === i ? "now" : ""; });
+  say(s.q);
+  clearInterval(ticker); ticker = setInterval(tick, 250); tick();
+  clearInterval(breathT);
+  if (s.breathe) { let inhale = true; const step = () => { $("ball").classList.toggle("in", inhale); $("breathWord").textContent = inhale ? "Breathe in" : "Breathe out"; inhale = !inhale; }; step(); breathT = setInterval(step, 5000); }
+  scrollTo(0, 0);
+}
+
+function left() { return paused ? pausedLeft : endAt - Date.now(); }
+function tick() {
+  const s = STEPS[idx], ms = left(), frac = Math.min(1, Math.max(0, 1 - ms / S.stepMs));
+  $("left").textContent = fmt(ms); $("breathLeft").textContent = fmt(ms) + " left";
+  $("ring").style.strokeDashoffset = (282.74 * frac).toFixed(2);
+  const now = document.querySelector("#dots i.now"); if (now) now.style.setProperty("--p", (frac * 100).toFixed(1) + "%");
+  if (ms <= 0 && !timeUp && !paused) {
+    timeUp = true; chime();
+    if (rec) { $("timesUp").hidden = false; return; } // let them finish speaking; we go on when they stop
+    advance();
+  }
+}
+function advance() { saveAnswer(); if (idx < STEPS.length - 1) startStep(idx + 1); else finish(); }
+
+$("nextBtn").addEventListener("click", () => { stopRec(true); advance(); });
+$("pauseBtn").addEventListener("click", () => {
+  if (paused) { endAt = Date.now() + pausedLeft; paused = false; $("pauseBtn").textContent = "Pause"; }
+  else { pausedLeft = left(); paused = true; $("pauseBtn").textContent = "Resume"; }
+});
+$("quitBtn").addEventListener("click", () => {
+  const any = Object.values(S.answers).some(a => a.text || a.clips.length);
+  if (any ? confirm("Stop now? What you’ve said so far will be saved.") : confirm("Stop the exercise?")) { stopRec(true); saveAnswer(); any ? finish() : endSession(); }
+});
+$("answer").addEventListener("input", saveAnswer);
+
+function saveAnswer() {
+  const s = STEPS[idx]; if (!S || !s || !s.rec) return;
+  S.answers[s.id].text = $("answer").value.trim();
+}
+function endSession() { stopRec(true); clearInterval(ticker); clearInterval(breathT); wake(false); try { speechSynthesis.cancel(); } catch {} S = null; renderHome(); show("home"); }
+
+function drawScale(el, val, onPick) {
+  el.innerHTML = Array.from({ length: 11 }, (_, n) => `<button type="button" aria-pressed="${n === val}" aria-label="${n} out of 10">${n}</button>`).join("");
+  el.onclick = e => { const b = e.target.closest("button"); if (!b) return; const v = +b.textContent; onPick(v); el.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b)); };
+}
+
+// ---------- recording ----------
+let rec = null; // { mr, stream, chunks, sr, base }
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+$("recBtn").addEventListener("click", () => rec ? stopRec() : startRec());
+
+async function startRec() {
+  const s = STEPS[idx];
+  const note = msg => { $("recNote").textContent = msg; $("recNote").hidden = false; };
+  let stream = null, mr = null;
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    if (window.MediaRecorder) { mr = new MediaRecorder(stream); }
+  } catch (e) {
+    if (stream) stream.getTracks().forEach(t => t.stop());
+    note("The microphone isn’t available. Check that this site may use the mic, or type your answer below.");
+    return;
+  }
+  if (!S || STEPS[idx] !== s || rec) { stream.getTracks().forEach(t => t.stop()); return; } // the step moved on while the mic was opening
+  const r = rec = { mr, stream, chunks: [], sr: null, stepId: s.id, sess: S };
+  if (mr) { mr.ondataavailable = e => { if (e.data.size) r.chunks.push(e.data); }; mr.start(1000); } // the last piece arrives after Stop
+  $("recBtn").classList.add("on"); $("recLbl").textContent = "Stop recording";
+  if (SR) {
+    const sr = new SR(); rec.sr = sr;
+    sr.continuous = true; sr.interimResults = true; sr.lang = navigator.language || "en-US";
+    sr.onresult = e => {
+      let fin = "", mid = "";
+      for (let k = e.resultIndex; k < e.results.length; k++) (e.results[k].isFinal ? (fin += e.results[k][0].transcript) : (mid += e.results[k][0].transcript));
+      if (fin) { const cur = $("answer").value; $("answer").value = (cur ? cur.replace(/\s*$/, " ") : "") + fin.trim(); saveAnswer(); }
+      $("interim").textContent = mid;
+    };
+    sr.onerror = e => { if (e.error === "no-speech" || e.error === "aborted") return; if (rec) rec.srDead = true; note("Your voice is being recorded, but this phone can’t write it out at the same time. Add a few words below so they show up in your summary."); };
+    sr.onend = () => { if (rec && rec.sr === sr && !rec.srDead) { try { sr.start(); } catch {} } }; // phones stop listening after a pause
+    try { sr.start(); } catch { rec.srDead = true; }
+  } else {
+    note("Your voice is being recorded. This browser can’t write it out, so add a few words below for your summary.");
+  }
+}
+
+function stopRec(silent) {
+  if (!rec) return;
+  const r = rec; rec = null;
+  if (r.sr) { r.sr.onend = null; try { r.sr.stop(); } catch {} }
+  $("recBtn").classList.remove("on"); $("interim").textContent = "";
+  const finishClip = () => {
+    r.stream.getTracks().forEach(t => t.stop());
+    if (!r.chunks.length) return;
+    const blob = new Blob(r.chunks, { type: r.chunks[0].type || "audio/webm" });
+    const key = `${r.sess.id}-${r.stepId}-${Date.now()}`;
+    r.sess.answers[r.stepId].clips.push(key); idb.put(key, blob);
+    if (!silent && STEPS[idx] && STEPS[idx].id === r.stepId) $("recLbl").textContent = "Record more";
+    if (r.sess.done) { persist(r.sess); if (viewing === r.sess) showSummary(r.sess, false); } // a clip that lands after Finish still gets saved
+  };
+  if (r.mr && r.mr.state !== "inactive") { r.mr.onstop = finishClip; r.mr.stop(); } else finishClip();
+  $("recLbl").textContent = "Record more";
+  saveAnswer();
+  if (!silent && timeUp) advance(); // time ran out while they were talking
+}
+
+// ---------- summary ----------
+function persist(s) { const list = sessions().filter(x => x.id !== s.id); list.push(s); saveSessions(list.slice(-50)); }
+function finish() {
+  clearInterval(ticker); clearInterval(breathT); wake(false); try { speechSynthesis.cancel(); } catch {}
+  S.ended = Date.now(); S.done = true; persist(S);
+  const s = S; S = null;
+  setTimeout(() => showSummary(s, false), 0);
+}
+
+let viewing = null;
+function showSummary(s, fromHistory) {
+  viewing = s;
+  show("summary");
+  const d = new Date(s.started);
+  const mins = s.ended ? Math.max(1, Math.round((s.ended - s.started) / 60000)) : null;
+  $("sumWhen").textContent = d.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" }) + " · " + d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" }) + (mins ? ` · ${mins} min` : "");
+  const askAfter = s.before != null && s.after == null && !fromHistory;
+  $("afterCard").hidden = !askAfter;
+  if (askAfter) drawScale($("weightAfter"), null, v => { s.after = v; persist(s); drawWeight(s); });
+  drawWeight(s);
+  const cards = STEPS.filter(st => st.rec).map(st => {
+    const a = s.answers[st.id]; if (!a || (!a.text && !a.clips.length)) return "";
+    return `<div class="card"><h3>${st.label}</h3>${a.text ? `<p class="txt">${esc(a.text)}</p>` : '<p class="muted">Recorded, not written out.</p>'}${a.clips.map(k => `<audio controls preload="none" data-k="${k}"></audio>`).join("")}</div>`;
+  }).join("");
+  $("sumCards").innerHTML = cards || '<div class="card"><p class="muted" style="margin:0">Nothing was recorded this time. That’s fine: the exercise still counts.</p></div>';
+  $("sumCards").querySelectorAll("audio[data-k]").forEach(async el => { const b = await idb.get(el.dataset.k); if (b) el.src = URL.createObjectURL(b); else el.replaceWith(Object.assign(document.createElement("p"), { className: "muted small", textContent: "Recording not found on this phone." })); });
+}
+function drawWeight(s) {
+  $("weightShow").hidden = s.before == null;
+  $("wB").textContent = s.before ?? "–"; $("wA").textContent = s.after ?? "–";
+}
+function summaryText(s) {
+  const d = new Date(s.started).toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
+  const parts = [`Thought Quieting · ${d}`];
+  STEPS.filter(st => st.rec).forEach(st => { const a = s.answers[st.id]; if (a && a.text) parts.push(`${st.label}:\n${a.text}`); });
+  if (s.before != null) parts.push(`How heavy it felt: ${s.before}/10 before${s.after != null ? `, ${s.after}/10 after` : ""}.`);
+  return parts.join("\n\n");
+}
+$("copyBtn").addEventListener("click", async () => { try { await navigator.clipboard.writeText(summaryText(viewing)); toast("Copied"); } catch { toast("Couldn’t copy on this phone"); } });
+$("shareBtn").addEventListener("click", async () => {
+  const text = summaryText(viewing);
+  if (navigator.share) { try { await navigator.share({ title: "Thought Quieting", text }); } catch {} }
+  else { try { await navigator.clipboard.writeText(text); toast("Sharing isn’t available here, so it was copied instead"); } catch {} }
+});
+$("doneBtn").addEventListener("click", () => { viewing = null; renderHome(); show("home"); });
+$("delBtn").addEventListener("click", () => {
+  if (!confirm("Delete this session and its recordings?")) return;
+  Object.values(viewing.answers).forEach(a => a.clips.forEach(k => idb.del(k)));
+  saveSessions(sessions().filter(x => x.id !== viewing.id)); viewing = null; renderHome(); show("home");
+});
+let toastT; function toast(m) { $("toast").textContent = m; $("toast").hidden = false; clearTimeout(toastT); toastT = setTimeout(() => $("toast").hidden = true, 2200); }
+
+renderHome();
+if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(() => {});
+</script>
+</body>
+</html>
