@@ -2,6 +2,7 @@
   "name": "Thought Quieting",
   "short_name": "Quieting",
   "description": "A guided 20-minute Thought Quieting exercise.",
+  "id": "./",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

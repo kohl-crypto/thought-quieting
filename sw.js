@@ -1,5 +1,5 @@
 // Works offline; picks up new versions by itself the next time the app opens with signal.
-const CACHE = "tq-v1.0.0";
+const CACHE = "tq-v1.1.0";
 const FILES = ["./", "index.html", "manifest.json", "icons/icon.svg", "icons/icon-192.png", "icons/icon-512.png"];
 
 self.addEventListener("install", e => {

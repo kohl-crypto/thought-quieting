@@ -4,13 +4,16 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Thought Quieting</title>
-<meta name="description" content="A guided 20-minute Thought Quieting exercise with timed steps, optional voice recording and a summary.">
+<meta name="description" content="A guided 20-minute Thought Quieting exercise: catch the negative thought, compare logic with talking to Jesus, and see what changed.">
 <meta name="theme-color" content="#f6f3ee" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#16181d" media="(prefers-color-scheme: dark)">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Quieting">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <style>
 :root{
   --bg:#f6f3ee; --card:#ffffff; --ink:#22262e; --muted:#6b7280; --line:#e4dfd6;
@@ -45,11 +48,13 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
   border:1px solid var(--line);background:var(--card);font-weight:600}
 .btn.primary{background:var(--accent);color:var(--accent-ink);border-color:transparent}
 .btn.wide{width:100%}
-.btn:disabled{opacity:.45;cursor:default}
 .row{display:flex;gap:10px;flex-wrap:wrap}
 .row>.btn{flex:1}
 .verse{font-style:italic;color:var(--muted);margin:4px 0 0}
 .verse span{display:block;font-style:normal;font-size:14px;margin-top:2px}
+details{margin-top:8px}
+details summary{cursor:pointer;color:var(--accent);font-weight:600;font-size:15px;min-height:32px}
+details p{font-size:15px;color:var(--muted);margin:6px 0 8px}
 [hidden]{display:none!important}
 
 /* home */
@@ -58,10 +63,12 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
   box-shadow:0 0 0 12px var(--soft)}
 .start small{font-size:15px;font-weight:500;opacity:.9;margin-top:2px}
 .start:active{transform:scale(.98)}
+.why{font-size:16px}
 .steps-list{margin:0;padding:0;list-style:none}
 .steps-list li{display:flex;gap:12px;padding:8px 0;border-top:1px solid var(--line)}
 .steps-list li:first-child{border-top:0}
 .steps-list b{font-weight:600}
+.steps-list .mic{font-size:14px;opacity:.7}
 .steps-list .n{flex:none;width:26px;height:26px;border-radius:50%;background:var(--soft);color:var(--ink);display:grid;place-items:center;font-size:14px;font-weight:600}
 .steps-list .t{margin-left:auto;color:var(--muted);font-size:14px;white-space:nowrap}
 .seg{display:flex;background:var(--soft);border-radius:12px;padding:4px;gap:4px}
@@ -74,17 +81,27 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 .hist .when{font-weight:600}
 .hist .gist{color:var(--muted);font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:60vw;display:block}
 
+.install{border-color:var(--accent)}
+.install ol{margin:6px 0 10px;padding-left:22px}
+.install li{margin:4px 0}
+.ios-share{display:inline-block;width:18px;height:18px;vertical-align:-3px}
+.extra small{display:block;color:var(--muted);font-size:13px;line-height:1.35}
+
 /* session */
-.top{display:flex;align-items:center;gap:12px}
-.top .x{min-height:44px;min-width:44px;border-radius:12px;font-size:22px;color:var(--muted)}
+.top{display:flex;align-items:center;gap:8px}
+.top .x,.top .mute{min-height:44px;min-width:44px;border-radius:12px;font-size:20px;color:var(--muted)}
+.top .mute[aria-pressed="true"]{background:var(--soft);color:var(--ink)}
 .dots{display:flex;gap:6px;flex:1}
 .dots i{flex:1;height:6px;border-radius:3px;background:var(--line)}
 .dots i.done{background:var(--accent)}
 .dots i.now{background:linear-gradient(90deg,var(--accent) var(--p,0%),var(--line) var(--p,0%))}
-.stepno{color:var(--muted);font-size:14px;font-weight:600;letter-spacing:.02em;margin:18px 0 2px;text-transform:uppercase}
+.mutednote{font-size:14px;color:var(--muted);text-align:right;margin:2px 0 0}
+.stepno{color:var(--muted);font-size:14px;font-weight:600;letter-spacing:.02em;margin:14px 0 2px;text-transform:uppercase}
 .q{font-size:23px;line-height:1.35;font-weight:600;margin:0 0 8px}
 .help{color:var(--muted);font-size:15px}
-.timer{position:relative;width:180px;height:180px;margin:14px auto 6px}
+.caught{background:var(--soft);border-radius:12px;padding:10px 12px;font-size:15px;margin:0 0 8px}
+.caught b{font-weight:650}
+.timer{position:relative;width:170px;height:170px;margin:12px auto 6px}
 .timer svg{width:100%;height:100%;transform:rotate(-90deg)}
 .timer .track{stroke:var(--ring-track)}
 .timer .bar{stroke:var(--accent);transition:stroke-dashoffset .25s linear}
@@ -96,9 +113,9 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 .breath .ball.in{transform:scale(2.3)}
 .breath .word{position:absolute;font-weight:600;color:var(--ink)}
 .breath .left{position:absolute;bottom:-22px;font-size:14px;color:var(--muted);font-variant-numeric:tabular-nums}
+.nextbar{margin:18px 0 4px}
 .recbtn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:56px;border-radius:14px;
-  background:var(--soft);font-weight:650;font-size:18px;border:1px solid transparent}
-#answerBox .recbtn{margin-bottom:12px}
+  background:var(--soft);font-weight:650;font-size:18px;border:1px solid transparent;margin-bottom:12px}
 .recbtn .dot{width:14px;height:14px;border-radius:50%;background:var(--rec)}
 .recbtn.on{background:var(--rec);color:#fff}
 .recbtn.on .dot{background:#fff;animation:blink 1s infinite}
@@ -106,22 +123,39 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 textarea{width:100%;min-height:96px;font:inherit;color:inherit;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:12px;resize:vertical}
 textarea:focus,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .interim:empty{display:none}
-.steps-list .mic{font-size:14px;opacity:.7}
 .interim{color:var(--muted);font-style:italic;min-height:1.5em;font-size:15px}
 .note{font-size:14px;color:var(--warn)}
+.qlbl{font-weight:600;font-size:16px;margin:16px 0 0}
+.qlbl .muted{font-weight:400}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.chips button{min-height:40px;padding:0 14px;border-radius:20px;background:var(--soft);font-size:15px;font-weight:600;border:2px solid transparent}
+.chips button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.chips button.sugg{border-color:var(--accent)}
+.chips button small{font-weight:500;opacity:.8}
+.detect{font-size:14px;color:var(--muted);margin:6px 0 0}
 .scale{display:grid;grid-template-columns:repeat(11,1fr);gap:4px;margin-top:8px}
 .scale button{min-height:40px;border-radius:8px;background:var(--soft);font-weight:600;font-size:15px}
 .scale button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
 .scale-ends{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-top:4px}
 .timesup{background:var(--soft);border-radius:12px;padding:12px 14px;font-weight:600;margin:10px 0}
-.nextbar{margin:18px 0 4px}
+#soundCard>summary{display:flex;justify-content:space-between;align-items:center;gap:8px;list-style:none;color:var(--ink);font-size:16px;min-height:28px}
+#soundCard>summary::-webkit-details-marker{display:none}
+#soundCard>summary::after{content:"›";color:var(--muted);font-size:20px;transition:transform .2s}
+#soundCard[open]>summary::after{transform:rotate(90deg)}
+#soundCard{padding:12px 16px}
+.vol{display:flex;align-items:center;gap:12px;margin-top:12px;font-size:15px;color:var(--muted)}
+.vol input{flex:1;accent-color:var(--accent)}
 
 /* summary */
 .sum h3{font-size:15px;margin:0 0 4px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.02em}
 .sum .txt{white-space:pre-wrap;margin:0}
 .sum audio{width:100%;margin-top:8px;height:40px}
-.weight{display:flex;align-items:center;gap:12px;font-size:28px;font-weight:700}
-.weight .arrow{color:var(--muted);font-size:20px}
+.wrow{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;margin:8px 0}
+.wrow .lab{font-size:15px;min-width:118px}
+.wrow .bar{height:12px;border-radius:6px;background:var(--line);overflow:hidden}
+.wrow .bar i{display:block;height:100%;background:var(--accent);border-radius:6px}
+.wrow .num{font-weight:700;font-variant-numeric:tabular-nums;min-width:24px;text-align:right}
+.verdict{font-weight:600;margin:10px 0 0}
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-size:15px;z-index:9}
 .foot{font-size:13px;color:var(--muted);text-align:center;margin-top:24px}
 </style>
@@ -136,6 +170,21 @@ textarea:focus,button:focus-visible{outline:2px solid var(--accent);outline-offs
 
   <button class="start" id="startBtn" aria-label="Start the exercise">Start<small id="startLen">20 minutes</small></button>
   <p class="muted small" style="text-align:center">Each question appears on its own. When its time is up, a soft chime plays and the next one appears.</p>
+
+  <div class="card install" id="installCard" hidden>
+    <h2>Put it on your home screen</h2>
+    <div id="installHow"></div>
+    <div class="row"><button class="btn primary" id="installBtn" hidden>Install</button><button class="btn" id="installLater">Not now</button></div>
+  </div>
+
+  <div class="card">
+    <h2>What this is for</h2>
+    <p class="why">Notice a negative thought and catch it. Then try two ways of settling it: arguing with it using logic, and talking with Jesus about it. You’ll see which one actually made it lighter.</p>
+    <details>
+      <summary>When to use it</summary>
+      <p>This is a skill for the middle of the storm, when you’re already upset. For deeper healing of a thought that keeps coming back, Immanuel prayer or journaling goes further. As you practice, you’ll find you can start toward peace from many places.</p>
+    </details>
+  </div>
 
   <div class="card">
     <h2>The six steps</h2>
@@ -153,6 +202,16 @@ textarea:focus,button:focus-visible{outline:2px solid var(--accent);outline-offs
     <label class="switch" style="margin-top:10px"><span>Read each question aloud</span><input type="checkbox" id="optSpeak" checked></label>
     <label class="switch"><span>Chime and vibrate between steps</span><input type="checkbox" id="optChime" checked></label>
     <label class="switch"><span>Keep the screen on</span><input type="checkbox" id="optWake" checked></label>
+    <label class="switch"><span>Silent mode: no voice, chime, vibration or sound</span><input type="checkbox" id="optMute"></label>
+  </div>
+
+  <div class="card">
+    <h2>Extras</h2>
+    <p class="muted small">Optional helps on top of the exercise. Turn off any you don’t want.</p>
+    <label class="switch extra"><span>Feeling check-in<small>Name the feeling and where it sits in your body. Suggests the feeling from your words and points out absolute words like “always” and “never”.</small></span><input type="checkbox" id="exCheckin"></label>
+    <label class="switch extra"><span>How heavy? (0–10)<small>A quick score at the start, after logic, after Jesus and at the end, so you can see which helped.</small></span><input type="checkbox" id="exWeigh"></label>
+    <label class="switch extra"><span>Background sound<small>White noise or a soft tone while you go through the steps.</small></span><input type="checkbox" id="exSound"></label>
+    <label class="switch extra"><span>Record answers<small>Record or type what you say, for your summary.</small></span><input type="checkbox" id="exRecord"></label>
   </div>
 
   <div class="card" id="histCard" hidden>
@@ -160,7 +219,9 @@ textarea:focus,button:focus-visible{outline:2px solid var(--accent);outline-offs
     <div class="hist" id="hist"></div>
   </div>
 
-  <p class="foot">Based on Exercise 25 in <i>THRIVEtoday, Track Two</i>.<br>Everything you record stays on this phone.</p>
+  <button class="btn wide" id="shareApp">Send this app to a friend</button>
+
+  <p class="foot">Based on Exercise 25 in <i>THRIVEtoday, Track Two</i> (Skill 2: quieting).<br>Everything you record stays on this phone. · <span id="ver"></span></p>
 </section>
 
 <!-- SESSION -->
@@ -168,10 +229,13 @@ textarea:focus,button:focus-visible{outline:2px solid var(--accent);outline-offs
   <div class="top">
     <button class="x" id="quitBtn" aria-label="Stop the exercise">✕</button>
     <div class="dots" id="dots" aria-hidden="true"></div>
+    <button class="mute" id="muteBtn" aria-pressed="false" aria-label="Silent mode">🔊</button>
   </div>
+  <p class="mutednote" id="mutedNote" hidden>Silent: no voice, chime, vibration or sound</p>
 
   <p class="stepno" id="stepNo">Step 1 of 6</p>
   <p class="q" id="stepQ"></p>
+  <p class="caught" id="caught" hidden></p>
   <p class="help" id="stepHelp"></p>
 
   <div class="timer" id="timerBox">
@@ -201,13 +265,33 @@ textarea:focus,button:focus-visible{outline:2px solid var(--accent);outline-offs
     <p class="note" id="recNote" hidden></p>
     <label class="muted small" for="answer" id="answerLbl">Or type a few words (optional)</label>
     <textarea id="answer" placeholder="Your words show up here as you speak. You can edit them."></textarea>
+
+    <div id="feelBox" hidden>
+      <p class="qlbl">What are you feeling? <span class="muted small">Name it, don’t push it away.</span></p>
+      <div class="chips" id="feelChips"></div>
+      <p class="detect" id="detect" aria-live="polite"></p>
+      <p class="qlbl">Where do you feel it in your body?</p>
+      <div class="chips" id="bodyChips"></div>
+    </div>
+
     <div id="weightBox" hidden>
-      <p class="muted small" style="margin:12px 0 0">How heavy does this feel right now?</p>
-      <div class="scale" id="weightBefore"></div>
+      <p class="qlbl" id="weightQ">How heavy does it feel right now?</p>
+      <div class="scale" id="weightScale"></div>
       <div class="scale-ends"><span>0 · light</span><span>10 · crushing</span></div>
     </div>
   </div>
 
+  <details class="card" id="soundCard">
+    <summary><span>Background sound</span><span class="muted small" id="soundNow" style="margin-left:auto">Off</span></summary>
+    <div class="chips" id="soundChips"></div>
+    <label class="vol"><span>Volume</span><input type="range" id="vol" min="0.05" max="1" step="0.05" aria-label="Sound volume"></label>
+    <details>
+      <summary>How to use the sound</summary>
+      <p>Name the feeling first, then pick a sound. Keep it barely audible, like a soft blanket in the room, not something to listen to. Let it hold the space while you notice where the feeling sits in your body and breathe into it, letting it rise, settle and ease.</p>
+      <p>The tone pairings (174 Hz for fear and despair, 396 Hz for shame and guilt, 417 Hz for disgust and feeling stuck, 528 Hz for anger) come from sound-healing tradition. Research hasn’t shown that a particular pitch works on a particular emotion. What helps is a steady, gentle sound while you breathe, so choose whichever one feels best, white noise included.</p>
+      <p>On iPhone, sound plays only when the side switch isn’t on silent.</p>
+    </details>
+  </details>
 </section>
 
 <!-- SUMMARY -->
@@ -221,9 +305,10 @@ textarea:focus,button:focus-visible{outline:2px solid var(--accent);outline-offs
     <div class="scale-ends"><span>0 · light</span><span>10 · crushing</span></div>
   </div>
 
-  <div class="card" id="weightShow" hidden>
-    <h2>How heavy it felt</h2>
-    <div class="weight"><span id="wB">–</span><span class="arrow">→</span><span id="wA">–</span><span class="muted small" style="font-weight:500">out of 10</span></div>
+  <div class="card" id="compareCard" hidden>
+    <h2>What made it lighter</h2>
+    <div id="wrows"></div>
+    <p class="verdict" id="verdict"></p>
   </div>
 
   <div id="sumCards" class="sum"></div>
@@ -234,6 +319,7 @@ textarea:focus,button:focus-visible{outline:2px solid var(--accent);outline-offs
   </div>
   <button class="btn primary wide" id="doneBtn" style="margin-top:10px">Done</button>
   <button class="btn wide" id="delBtn" style="margin-top:10px;color:var(--warn)">Delete this session</button>
+  <p class="foot">Thought Quieting helps in the moment. For a thought that keeps coming back, try Immanuel prayer or journaling with it.</p>
 </section>
 
 </main>
@@ -241,28 +327,53 @@ textarea:focus,button:focus-visible{outline:2px solid var(--accent);outline-offs
 
 <script>
 "use strict";
-const VERSION = "1.0.0";
+const VERSION = "1.1.0";
 
 // The exercise, in our own words. Minutes are the book's timings.
+// weight: where the 0-10 "how heavy" check sits, so logic and time with Jesus can be compared.
 const STEPS = [
   { id: "ready", min: 2, title: "Get ready",
     q: "Read through the steps ahead and practice the RC nodding sequence.",
     help: "Get comfortable. Nothing to record yet." },
-  { id: "event", min: 2, title: "What’s on your mind", rec: true, weight: true, label: "What was on my mind",
-    q: "What event or issue has been on your mind lately? What negative thoughts, and what conclusion, come with it?",
+  { id: "event", min: 2, title: "Catch the thought", rec: true, checkin: true, weight: "start", label: "What was on my mind",
+    wq: "How heavy does it feel right now?",
+    q: "Pick one event or issue that’s been on your mind lately. What negative thoughts come with it, and what conclusion have you drawn?",
     help: "Example: “I keep replaying that phone call.” Conclusion: “I always say the wrong thing.”" },
-  { id: "logic", min: 3, title: "Talk back", rec: true, label: "Talking back with logic",
-    q: "Argue with those thoughts. Using logic, why doesn’t it make sense to believe that conclusion?",
+  { id: "logic", min: 3, title: "Talk back with logic", rec: true, weight: "logic", label: "Talking back with logic",
+    wq: "After arguing with it, how heavy does it feel?",
+    q: "Argue with those thoughts. Using logic and reason, tell yourself why that conclusion doesn’t make sense to believe.",
     help: "Example: “One call went badly. Most of my calls go fine.”" },
-  { id: "jesus", min: 5, title: "With Jesus", rec: true, label: "What Jesus showed me",
-    q: "Take a moment to thank Jesus for something. Then ask Him: are these thoughts true? What is Your view of this?",
-    help: "Be quiet and notice what comes. There’s no wrong answer." },
+  { id: "jesus", min: 5, title: "Talk with Jesus", rec: true, weight: "jesus", label: "What Jesus showed me",
+    wq: "After time with Jesus, how heavy does it feel?",
+    q: "Take a moment to thank Jesus for something, or just be with Him. Then ask: are these thoughts and conclusions true? What’s Your view of this?",
+    help: "Notice how He sees the problem. Does it look as big, or as scary, to Him? There’s no wrong answer." },
   { id: "breathe", min: 3, title: "Breathe", breathe: true,
     q: "Breathe slowly and deeply from your belly, not your chest. Let your body relax.",
     help: "Follow the circle: breathe in as it grows, out as it shrinks." },
   { id: "share", min: 5, title: "Share", rec: true, label: "What I noticed",
-    q: "Share what happened with your partner. Which helped more: arguing with logic, or talking with Jesus?",
+    q: "Share what happened with your partner. How did talking back with logic compare with talking to Jesus?",
     help: "No partner today? Say it out loud here." },
+];
+
+// The six big feelings, the words that usually point to them, and the tone traditionally paired with each.
+const FEELINGS = [
+  { id: "fear", name: "Fear", tone: 174, words: ["afraid", "scared", "fear", "fearful", "worried", "worry", "worrying", "anxious", "anxiety", "nervous", "panic", "panicking", "terrified", "dread", "what if", "unsafe", "overwhelmed"] },
+  { id: "anger", name: "Anger", tone: 528, words: ["angry", "mad", "furious", "pissed", "resent", "resentful", "resentment", "irritated", "annoyed", "frustrated", "rage", "jerk", "jerks", "unfair", "hate", "fed up", "cut me off"] },
+  { id: "shame", name: "Shame", tone: 396, words: ["ashamed", "shame", "embarrassed", "humiliated", "stupid", "failure", "failing", "failed", "worthless", "not good enough", "guilty", "guilt", "my fault", "loser", "idiot", "pathetic", "useless"] },
+  { id: "disgust", name: "Disgust", tone: 417, words: ["disgust", "disgusted", "disgusting", "gross", "sick of", "repulsed", "revolting", "nasty", "can't stand", "cannot stand", "stuck"] },
+  { id: "despair", name: "Hopeless despair", tone: 174, words: ["hopeless", "pointless", "give up", "giving up", "no way out", "never going to", "nothing will", "no point", "can't go on", "trapped", "helpless", "too much", "can't do this"] },
+  { id: "sad", name: "Sadness", tone: 0, words: ["sad", "grief", "grieving", "lonely", "alone", "loss", "lost", "miss", "missing", "hurt", "hurts", "cry", "crying", "heartbroken", "disappointed"] },
+];
+// Absolute words are often the negative conclusion talking; catching them is the first half of the exercise.
+const ABSOLUTES = ["always", "never", "everyone", "everybody", "no one", "nobody", "everything", "nothing", "ruined", "should", "must", "can't", "cannot", "people are", "i'm a", "i am a", "i'm such", "i am such", "all my fault", "every time"];
+const BODY = ["Chest", "Stomach", "Throat", "Jaw", "Shoulders", "Head", "Hands", "Somewhere else"];
+const SOUNDS = [
+  { id: "off", name: "Off" },
+  { id: "noise", name: "White noise" },
+  { id: "174", name: "174 Hz", sub: "fear · despair", hz: 174 },
+  { id: "396", name: "396 Hz", sub: "shame · guilt", hz: 396 },
+  { id: "417", name: "417 Hz", sub: "disgust · stuck", hz: 417 },
+  { id: "528", name: "528 Hz", sub: "anger", hz: 528 },
 ];
 
 const $ = id => document.getElementById(id);
@@ -292,22 +403,44 @@ const idb = (() => {
   };
 })();
 
-const settings = Object.assign({ timing: "book", speak: true, chime: true, wake: true }, store.get("tq-settings", {}));
+const settings = Object.assign({ timing: "book", speak: true, chime: true, wake: true, mute: false, vol: 0.3 }, store.get("tq-settings", {}));
+settings.ex = Object.assign({ checkin: true, weigh: true, sound: true, record: true }, settings.ex);
+const EX = { Checkin: "checkin", Weigh: "weigh", Sound: "sound", Record: "record" };
 const saveSettings = () => store.set("tq-settings", settings);
-const sessions = () => store.get("tq-sessions", []);
+const sessions = () => store.get("tq-sessions", []).map(upgrade);
 const saveSessions = list => store.set("tq-sessions", list);
+function upgrade(s) { // sessions saved by 1.0 kept only a before and after number
+  if (!s.w) s.w = { start: s.before ?? null, logic: null, jesus: null, end: s.after ?? null };
+  return s;
+}
 
 const stepMin = s => settings.timing === "book" ? s.min : +settings.timing;
 const totalMin = () => STEPS.reduce((a, s) => a + stepMin(s), 0);
 const fmt = ms => { const t = Math.max(0, Math.ceil(ms / 1000)); return Math.floor(t / 60) + ":" + String(t % 60).padStart(2, "0"); };
+function esc(t) { return String(t).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
+
+// ---------- detection ----------
+const wordRe = w => new RegExp("(^|[^a-z’'])" + w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&").replace(/'/g, "['’]") + "(?=$|[^a-z])", "i");
+// Which feeling do their own words point to? Returns the best match and the words that gave it away.
+function detectFeeling(text) {
+  if (!text) return null;
+  let best = null;
+  for (const f of FEELINGS) {
+    const hits = f.words.filter(w => wordRe(w).test(text));
+    if (hits.length && (!best || hits.length > best.hits.length)) best = { id: f.id, hits };
+  }
+  return best;
+}
+function catchAbsolutes(text) { return text ? ABSOLUTES.filter(w => wordRe(w).test(text)) : []; }
 
 // ---------- home ----------
 function renderHome() {
   $("startLen").textContent = totalMin() + " minutes";
   $("stepsList").innerHTML = STEPS.map((s, i) =>
-    `<li><span class="n">${i + 1}</span><span><b>${s.title}</b>${s.rec ? ' <span class="mic" title="You can record your answer" aria-label="you can record">🎙</span>' : ""}</span><span class="t">${stepMin(s)} min</span></li>`).join("");
+    `<li><span class="n">${i + 1}</span><span><b>${s.title}</b>${s.rec && settings.ex.record ? ' <span class="mic" title="You can record your answer" aria-label="you can record">🎙</span>' : ""}</span><span class="t">${stepMin(s)} min</span></li>`).join("");
   document.querySelectorAll("#timingSeg button").forEach(b => b.setAttribute("aria-pressed", b.dataset.t === settings.timing));
-  $("optSpeak").checked = settings.speak; $("optChime").checked = settings.chime; $("optWake").checked = settings.wake;
+  $("optSpeak").checked = settings.speak; $("optChime").checked = settings.chime; $("optWake").checked = settings.wake; $("optMute").checked = settings.mute;
+  Object.entries(EX).forEach(([k, key]) => $("ex" + k).checked = settings.ex[key]);
   const list = sessions();
   $("histCard").hidden = !list.length;
   $("hist").innerHTML = list.slice().reverse().map(s => {
@@ -315,33 +448,91 @@ function renderHome() {
     return `<button data-id="${s.id}"><span><span class="when">${new Date(s.started).toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })}</span><span class="gist">${esc(gist)}</span></span><span class="muted">›</span></button>`;
   }).join("");
 }
-function esc(t) { return String(t).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
 
 $("timingSeg").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; settings.timing = b.dataset.t; saveSettings(); renderHome(); });
 ["Speak", "Chime", "Wake"].forEach(k => $("opt" + k).addEventListener("change", e => { settings[k.toLowerCase()] = e.target.checked; saveSettings(); }));
+$("optMute").addEventListener("change", e => setMute(e.target.checked));
+Object.entries(EX).forEach(([k, key]) => $("ex" + k).addEventListener("change", e => { settings.ex[key] = e.target.checked; saveSettings(); renderHome(); }));
 $("hist").addEventListener("click", e => { const b = e.target.closest("button[data-id]"); if (b) showSummary(sessions().find(s => s.id === b.dataset.id), true); });
 
 function show(id) { ["home", "session", "summary"].forEach(s => $(s).hidden = s !== id); scrollTo(0, 0); }
 
 // ---------- sound, voice, wake lock ----------
 let actx;
+function ac() { try { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); if (actx.state === "suspended") actx.resume(); } catch {} return actx; }
+
+function setMute(on) {
+  settings.mute = on; saveSettings();
+  $("muteBtn").setAttribute("aria-pressed", on); $("muteBtn").textContent = on ? "🔇" : "🔊";
+  $("muteBtn").setAttribute("aria-label", on ? "Silent mode is on. Tap to turn sound back on" : "Silent mode");
+  $("mutedNote").hidden = !on; $("optMute").checked = on;
+  if (on) { try { speechSynthesis.cancel(); } catch {} stopSound(); }
+  else if (S && S.sound && S.sound !== "off" && settings.ex.sound) playSound(S.sound);
+  drawSound();
+}
+$("muteBtn").addEventListener("click", () => setMute(!settings.mute));
+
 function chime() {
-  if (settings.chime && navigator.vibrate) navigator.vibrate([180, 90, 180]);
-  if (!settings.chime) return;
+  if (settings.mute || !settings.chime) return;
+  if (navigator.vibrate) navigator.vibrate([180, 90, 180]);
+  const c = ac(); if (!c) return;
   try {
-    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
     [523.25, 783.99].forEach((f, i) => {
-      const o = actx.createOscillator(), g = actx.createGain(), t = actx.currentTime + i * 0.35;
-      o.type = "sine"; o.frequency.value = f; o.connect(g); g.connect(actx.destination);
+      const o = c.createOscillator(), g = c.createGain(), t = c.currentTime + i * 0.35;
+      o.type = "sine"; o.frequency.value = f; o.connect(g); g.connect(c.destination);
       g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.25, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + 1.6);
       o.start(t); o.stop(t + 1.7);
     });
   } catch {}
 }
 function say(text) {
-  if (!settings.speak || !window.speechSynthesis) return;
+  if (settings.mute || !settings.speak || !window.speechSynthesis) return;
   try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text); u.rate = 0.92; speechSynthesis.speak(u); } catch {}
 }
+
+// Background sound: a soft sine tone or gentle white noise, faded in and kept low.
+let bg = null; // { src, gain, kind }
+const bgLevel = kind => settings.vol * (kind === "noise" ? 0.18 : 0.06);
+function playSound(kind) {
+  stopSound();
+  if (kind === "off" || settings.mute) return;
+  const c = ac(); if (!c) return;
+  try {
+    const gain = c.createGain(); gain.gain.value = 0.0001; gain.connect(c.destination);
+    let src;
+    if (kind === "noise") {
+      const len = c.sampleRate * 3, buf = c.createBuffer(1, len, c.sampleRate), d = buf.getChannelData(0);
+      for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+      src = c.createBufferSource(); src.buffer = buf; src.loop = true;
+      const lp = c.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 5000; // takes the hiss off the top
+      src.connect(lp); lp.connect(gain);
+    } else {
+      src = c.createOscillator(); src.type = "sine"; src.frequency.value = SOUNDS.find(s => s.id === kind).hz; src.connect(gain);
+    }
+    src.start();
+    gain.gain.setTargetAtTime(bgLevel(kind), c.currentTime, 0.8); // about 2 s to fade in
+    bg = { src, gain, kind };
+  } catch { bg = null; }
+}
+function stopSound() {
+  if (!bg) return;
+  const b = bg; bg = null;
+  try { b.gain.gain.setTargetAtTime(0.0001, actx.currentTime, 0.15); setTimeout(() => { try { b.src.stop(); } catch {} }, 700); } catch {}
+}
+function pickSound(kind) { if (S) S.sound = kind; playSound(kind); drawSound(); }
+function drawSound() {
+  const cur = S ? S.sound || "off" : "off";
+  const f = S && FEELINGS.find(x => x.id === (S.feel || (S.feelAuto && S.feelAuto.id)));
+  const sugg = f ? (f.tone ? String(f.tone) : "noise") : null;
+  $("soundChips").innerHTML = SOUNDS.map(s =>
+    `<button type="button" data-k="${s.id}" aria-pressed="${s.id === cur}" class="${s.id === sugg ? "sugg" : ""}">${s.name}${s.sub ? ` <small>${s.sub}</small>` : ""}${s.id === sugg ? " <small>· suggested</small>" : ""}</button>`).join("");
+  const name = SOUNDS.find(s => s.id === cur).name;
+  $("soundNow").textContent = settings.mute ? "Silent mode" : cur === "off" ? "Off" : "Playing " + name;
+  $("vol").value = settings.vol;
+}
+$("soundChips").addEventListener("click", e => { const b = e.target.closest("button[data-k]"); if (b) pickSound(b.dataset.k); });
+$("vol").addEventListener("input", e => { settings.vol = +e.target.value; saveSettings(); if (bg && actx) bg.gain.gain.setTargetAtTime(bgLevel(bg.kind), actx.currentTime, 0.1); });
+
 let wakeLock = null;
 async function wake(on) {
   try {
@@ -356,9 +547,10 @@ let S = null;         // the session being run
 let idx = 0, endAt = 0, pausedLeft = 0, paused = false, timeUp = false, ticker = 0, breathT = 0;
 
 $("startBtn").addEventListener("click", () => {
-  try { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); actx.resume(); } catch {} // phones only allow sound after a tap
-  S = { id: Date.now().toString(36), started: Date.now(), timing: settings.timing, answers: {}, before: null, after: null };
+  ac(); // phones only allow sound after a tap
+  S = { id: Date.now().toString(36), started: Date.now(), timing: settings.timing, answers: {}, w: { start: null, logic: null, jesus: null, end: null }, feel: null, feelAuto: null, body: [], sound: "off" };
   $("dots").innerHTML = STEPS.map(() => "<i></i>").join("");
+  setMute(settings.mute);
   show("session"); wake(true); startStep(0);
 });
 
@@ -369,21 +561,28 @@ function startStep(i) {
   endAt = Date.now() + ms; S.stepMs = ms;
   $("stepNo").textContent = `Step ${i + 1} of ${STEPS.length} · ${s.title}`;
   $("stepQ").textContent = s.q;
-  $("stepHelp").textContent = s.help;
+  $("stepHelp").textContent = helpFor(s);
+  drawCaught(s);
   $("of").textContent = `of ${stepMin(s)} min`;
   $("timesUp").hidden = true;
   $("pauseBtn").textContent = "Pause";
   $("nextBtn").textContent = i === STEPS.length - 1 ? "Finish" : "Next question";
   $("timerBox").hidden = !!s.breathe; $("breathBox").hidden = !s.breathe;
-  $("answerBox").hidden = !s.rec;
-  $("weightBox").hidden = !s.weight;
+  const showFeel = s.checkin && settings.ex.checkin, showWeigh = s.weight && settings.ex.weigh;
+  $("answerBox").hidden = !(s.rec && settings.ex.record) && !showFeel && !showWeigh;
+  $("recBtn").hidden = $("answer").hidden = $("answerLbl").hidden = !(s.rec && settings.ex.record);
+  $("feelBox").hidden = !showFeel;
+  $("weightBox").hidden = !showWeigh;
+  $("soundCard").hidden = !settings.ex.sound;
   $("recNote").hidden = true; $("interim").textContent = "";
   if (s.rec) {
     const a = S.answers[s.id] || (S.answers[s.id] = { text: "", clips: [] });
     $("answer").value = a.text;
     $("recLbl").textContent = a.clips.length ? "Record more" : "Record my answer";
   }
-  if (s.weight) drawScale($("weightBefore"), S.before, v => { S.before = v; });
+  if (showFeel) drawCheckin();
+  if (showWeigh) { $("weightQ").textContent = s.wq; drawScale($("weightScale"), S.w[s.weight], v => { S.w[s.weight] = v; }); }
+  drawSound();
   document.querySelectorAll("#dots i").forEach((d, k) => { d.className = k < i ? "done" : k === i ? "now" : ""; });
   say(s.q);
   clearInterval(ticker); ticker = setInterval(tick, 250); tick();
@@ -392,9 +591,40 @@ function startStep(i) {
   scrollTo(0, 0);
 }
 
+function helpFor(s) {
+  if (s.breathe && S.body.length) {
+    const where = S.body.filter(b => b !== "Somewhere else").map(b => b.toLowerCase());
+    if (where.length) return `Follow the circle. As you breathe out, let the tightness in your ${where.join(" and ")} soften. Let the feeling rise and settle on its own.`;
+  }
+  return s.help;
+}
+// On "Talk back", show the words we caught in what they said, so they know what to argue with.
+function drawCaught(s) {
+  const ev = S.answers.event && S.answers.event.text;
+  const hits = s.id === "logic" && settings.ex.checkin ? catchAbsolutes(ev) : [];
+  $("caught").hidden = !hits.length;
+  if (hits.length) $("caught").innerHTML = `You said <b>${hits.map(h => "“" + esc(h) + "”").join(", ")}</b>. Is that really true, every time?`;
+}
+
+function drawCheckin() {
+  const auto = S.feelAuto, chosen = S.feel;
+  $("feelChips").innerHTML = FEELINGS.map(f =>
+    `<button type="button" data-f="${f.id}" aria-pressed="${f.id === chosen}" class="${!chosen && auto && auto.id === f.id ? "sugg" : ""}">${f.name}</button>`).join("");
+  $("detect").textContent = !chosen && auto ? `From your words (“${auto.hits.slice(0, 3).join("”, “")}”) it sounds like ${FEELINGS.find(f => f.id === auto.id).name.toLowerCase()}. Tap it if that’s right.` : "";
+  $("bodyChips").innerHTML = BODY.map(b => `<button type="button" data-b="${b}" aria-pressed="${S.body.includes(b)}">${b}</button>`).join("");
+}
+$("feelChips").addEventListener("click", e => {
+  const b = e.target.closest("button[data-f]"); if (!b) return;
+  S.feel = S.feel === b.dataset.f ? null : b.dataset.f; drawCheckin(); drawSound();
+});
+$("bodyChips").addEventListener("click", e => {
+  const b = e.target.closest("button[data-b]"); if (!b) return;
+  const k = b.dataset.b; S.body = S.body.includes(k) ? S.body.filter(x => x !== k) : S.body.concat(k); drawCheckin();
+});
+
 function left() { return paused ? pausedLeft : endAt - Date.now(); }
 function tick() {
-  const s = STEPS[idx], ms = left(), frac = Math.min(1, Math.max(0, 1 - ms / S.stepMs));
+  const ms = left(), frac = Math.min(1, Math.max(0, 1 - ms / S.stepMs));
   $("left").textContent = fmt(ms); $("breathLeft").textContent = fmt(ms) + " left";
   $("ring").style.strokeDashoffset = (282.74 * frac).toFixed(2);
   const now = document.querySelector("#dots i.now"); if (now) now.style.setProperty("--p", (frac * 100).toFixed(1) + "%");
@@ -415,13 +645,19 @@ $("quitBtn").addEventListener("click", () => {
   const any = Object.values(S.answers).some(a => a.text || a.clips.length);
   if (any ? confirm("Stop now? What you’ve said so far will be saved.") : confirm("Stop the exercise?")) { stopRec(true); saveAnswer(); any ? finish() : endSession(); }
 });
-$("answer").addEventListener("input", saveAnswer);
+let detectT;
+$("answer").addEventListener("input", () => { saveAnswer(); clearTimeout(detectT); detectT = setTimeout(redetect, 400); });
 
 function saveAnswer() {
   const s = STEPS[idx]; if (!S || !s || !s.rec) return;
   S.answers[s.id].text = $("answer").value.trim();
 }
-function endSession() { stopRec(true); clearInterval(ticker); clearInterval(breathT); wake(false); try { speechSynthesis.cancel(); } catch {} S = null; renderHome(); show("home"); }
+function redetect() {
+  if (!S || STEPS[idx].id !== "event") return;
+  S.feelAuto = detectFeeling(S.answers.event.text);
+  drawCheckin(); drawSound();
+}
+function endSession() { stopRec(true); stopSound(); clearInterval(ticker); clearInterval(breathT); wake(false); try { speechSynthesis.cancel(); } catch {} S = null; renderHome(); show("home"); }
 
 function drawScale(el, val, onPick) {
   el.innerHTML = Array.from({ length: 11 }, (_, n) => `<button type="button" aria-pressed="${n === val}" aria-label="${n} out of 10">${n}</button>`).join("");
@@ -429,7 +665,7 @@ function drawScale(el, val, onPick) {
 }
 
 // ---------- recording ----------
-let rec = null; // { mr, stream, chunks, sr, base }
+let rec = null; // { mr, stream, chunks, sr, stepId, sess }
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
 
 $("recBtn").addEventListener("click", () => rec ? stopRec() : startRec());
@@ -456,7 +692,7 @@ async function startRec() {
     sr.onresult = e => {
       let fin = "", mid = "";
       for (let k = e.resultIndex; k < e.results.length; k++) (e.results[k].isFinal ? (fin += e.results[k][0].transcript) : (mid += e.results[k][0].transcript));
-      if (fin) { const cur = $("answer").value; $("answer").value = (cur ? cur.replace(/\s*$/, " ") : "") + fin.trim(); saveAnswer(); }
+      if (fin) { const cur = $("answer").value; $("answer").value = (cur ? cur.replace(/\s*$/, " ") : "") + fin.trim(); saveAnswer(); redetect(); }
       $("interim").textContent = mid;
     };
     sr.onerror = e => { if (e.error === "no-speech" || e.error === "aborted") return; if (rec) rec.srDead = true; note("Your voice is being recorded, but this phone can’t write it out at the same time. Add a few words below so they show up in your summary."); };
@@ -478,7 +714,6 @@ function stopRec(silent) {
     const blob = new Blob(r.chunks, { type: r.chunks[0].type || "audio/webm" });
     const key = `${r.sess.id}-${r.stepId}-${Date.now()}`;
     r.sess.answers[r.stepId].clips.push(key); idb.put(key, blob);
-    if (!silent && STEPS[idx] && STEPS[idx].id === r.stepId) $("recLbl").textContent = "Record more";
     if (r.sess.done) { persist(r.sess); if (viewing === r.sess) showSummary(r.sess, false); } // a clip that lands after Finish still gets saved
   };
   if (r.mr && r.mr.state !== "inactive") { r.mr.onstop = finishClip; r.mr.stop(); } else finishClip();
@@ -490,7 +725,8 @@ function stopRec(silent) {
 // ---------- summary ----------
 function persist(s) { const list = sessions().filter(x => x.id !== s.id); list.push(s); saveSessions(list.slice(-50)); }
 function finish() {
-  clearInterval(ticker); clearInterval(breathT); wake(false); try { speechSynthesis.cancel(); } catch {}
+  clearInterval(ticker); clearInterval(breathT); wake(false); stopSound(); try { speechSynthesis.cancel(); } catch {}
+  if (!S.feel && S.feelAuto) S.feel = null; // only what they confirmed counts as their feeling
   S.ended = Date.now(); S.done = true; persist(S);
   const s = S; S = null;
   setTimeout(() => showSummary(s, false), 0);
@@ -498,31 +734,56 @@ function finish() {
 
 let viewing = null;
 function showSummary(s, fromHistory) {
-  viewing = s;
+  viewing = s = upgrade(s);
   show("summary");
   const d = new Date(s.started);
   const mins = s.ended ? Math.max(1, Math.round((s.ended - s.started) / 60000)) : null;
   $("sumWhen").textContent = d.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" }) + " · " + d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" }) + (mins ? ` · ${mins} min` : "");
-  const askAfter = s.before != null && s.after == null && !fromHistory;
+  const askAfter = s.w.end == null && !fromHistory && Object.values(s.w).some(v => v != null);
   $("afterCard").hidden = !askAfter;
-  if (askAfter) drawScale($("weightAfter"), null, v => { s.after = v; persist(s); drawWeight(s); });
-  drawWeight(s);
-  const cards = STEPS.filter(st => st.rec).map(st => {
-    const a = s.answers[st.id]; if (!a || (!a.text && !a.clips.length)) return "";
-    return `<div class="card"><h3>${st.label}</h3>${a.text ? `<p class="txt">${esc(a.text)}</p>` : '<p class="muted">Recorded, not written out.</p>'}${a.clips.map(k => `<audio controls preload="none" data-k="${k}"></audio>`).join("")}</div>`;
-  }).join("");
-  $("sumCards").innerHTML = cards || '<div class="card"><p class="muted" style="margin:0">Nothing was recorded this time. That’s fine: the exercise still counts.</p></div>';
+  if (askAfter) drawScale($("weightAfter"), null, v => { s.w.end = v; persist(s); drawCompare(s); $("afterCard").hidden = true; });
+  drawCompare(s);
+
+  const cards = [];
+  const feel = FEELINGS.find(f => f.id === s.feel);
+  if (feel || (s.body && s.body.length)) cards.push(`<div class="card"><h3>What I felt</h3><p class="txt">${feel ? esc(feel.name) : "Not named"}${s.body && s.body.length ? ` · in my ${esc(s.body.map(b => b.toLowerCase()).join(", "))}` : ""}</p></div>`);
+  const caught = catchAbsolutes(s.answers.event && s.answers.event.text);
+  if (caught.length) cards.push(`<div class="card"><h3>Thoughts I caught</h3><p class="txt">${caught.map(c => "“" + esc(c) + "”").join(", ")}</p></div>`);
+  STEPS.filter(st => st.rec).forEach(st => {
+    const a = s.answers[st.id]; if (!a || (!a.text && !a.clips.length)) return;
+    cards.push(`<div class="card"><h3>${st.label}</h3>${a.text ? `<p class="txt">${esc(a.text)}</p>` : '<p class="muted">Recorded, not written out.</p>'}${a.clips.map(k => `<audio controls preload="none" data-k="${k}"></audio>`).join("")}</div>`);
+  });
+  $("sumCards").innerHTML = cards.join("") || '<div class="card"><p class="muted" style="margin:0">Nothing was recorded this time. That’s fine: the exercise still counts.</p></div>';
   $("sumCards").querySelectorAll("audio[data-k]").forEach(async el => { const b = await idb.get(el.dataset.k); if (b) el.src = URL.createObjectURL(b); else el.replaceWith(Object.assign(document.createElement("p"), { className: "muted small", textContent: "Recording not found on this phone." })); });
 }
-function drawWeight(s) {
-  $("weightShow").hidden = s.before == null;
-  $("wB").textContent = s.before ?? "–"; $("wA").textContent = s.after ?? "–";
+
+// The heart of the exercise: did logic or time with Jesus make the thought lighter?
+const WROWS = [["start", "At the start"], ["logic", "After logic"], ["jesus", "After Jesus"], ["end", "At the end"]];
+function verdictOf(w) {
+  const dl = w.start != null && w.logic != null ? w.start - w.logic : null;
+  const base = w.logic ?? w.start;
+  const dj = base != null && w.jesus != null ? base - w.jesus : null;
+  if (dl == null || dj == null) return "";
+  const p = n => `${n} point${Math.abs(n) === 1 ? "" : "s"}`;
+  const a = dl > 0 ? `Arguing with logic made it ${p(dl)} lighter` : dl < 0 ? `Arguing with logic made it ${p(-dl)} heavier` : "Arguing with logic didn’t change it";
+  const b = dj > 0 ? `time with Jesus made it ${p(dj)} lighter` : dj < 0 ? `time with Jesus made it ${p(-dj)} heavier` : "time with Jesus didn’t change it";
+  return `${a}; ${b}.`;
+}
+function drawCompare(s) {
+  const has = WROWS.some(([k]) => s.w[k] != null);
+  $("compareCard").hidden = !has;
+  $("wrows").innerHTML = WROWS.filter(([k]) => s.w[k] != null).map(([k, lab]) =>
+    `<div class="wrow"><span class="lab">${lab}</span><span class="bar"><i style="width:${s.w[k] * 10}%"></i></span><span class="num">${s.w[k]}</span></div>`).join("");
+  $("verdict").textContent = verdictOf(s.w);
 }
 function summaryText(s) {
   const d = new Date(s.started).toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
   const parts = [`Thought Quieting · ${d}`];
+  const feel = FEELINGS.find(f => f.id === s.feel);
+  if (feel || (s.body && s.body.length)) parts.push(`What I felt: ${feel ? feel.name : "not named"}${s.body && s.body.length ? `, in my ${s.body.map(b => b.toLowerCase()).join(", ")}` : ""}.`);
   STEPS.filter(st => st.rec).forEach(st => { const a = s.answers[st.id]; if (a && a.text) parts.push(`${st.label}:\n${a.text}`); });
-  if (s.before != null) parts.push(`How heavy it felt: ${s.before}/10 before${s.after != null ? `, ${s.after}/10 after` : ""}.`);
+  const rows = WROWS.filter(([k]) => s.w[k] != null).map(([k, lab]) => `${lab}: ${s.w[k]}/10`);
+  if (rows.length) parts.push("How heavy it felt:\n" + rows.join("\n") + (verdictOf(s.w) ? "\n" + verdictOf(s.w) : ""));
   return parts.join("\n\n");
 }
 $("copyBtn").addEventListener("click", async () => { try { await navigator.clipboard.writeText(summaryText(viewing)); toast("Copied"); } catch { toast("Couldn’t copy on this phone"); } });
@@ -539,8 +800,46 @@ $("delBtn").addEventListener("click", () => {
 });
 let toastT; function toast(m) { $("toast").textContent = m; $("toast").hidden = false; clearTimeout(toastT); toastT = setTimeout(() => $("toast").hidden = true, 2200); }
 
+// ---------- install ----------
+const ua = navigator.userAgent;
+const isIOS = /iPhone|iPad|iPod/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+const isAndroid = /Android/.test(ua);
+const inApp = /FBAN|FBAV|FB_IAB|Instagram|Messenger|Line\/|Snapchat|TikTok|; wv\)/.test(ua);
+const installed = () => matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+let installEvt = null;
+const SHARE_SVG = '<svg class="ios-share" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-label="Share"><path d="M12 3v12M8 7l4-4 4 4"/><path d="M5 11v9h14v-9"/></svg>';
+function drawInstall() {
+  const card = $("installCard");
+  if (installed() || store.get("tq-install-later", 0) > Date.now()) { card.hidden = true; return; }
+  let how = "";
+  $("installBtn").hidden = true;
+  if (inApp) how = `<p>This link opened inside another app, which can’t install it. Tap the <b>⋯</b> or <b>⋮</b> menu and choose <b>Open in ${isIOS ? "Safari" : "Chrome"}</b> (or <b>Open in browser</b>), then install from there.</p>`;
+  else if (installEvt) { how = "<p>One tap and it sits on your home screen like any other app, and works without signal.</p>"; $("installBtn").hidden = false; }
+  else if (isIOS) how = `<ol><li>Tap the Share button ${SHARE_SVG} at the bottom (or top) of Safari.</li><li>Scroll down and tap <b>Add to Home Screen</b>, then <b>Add</b>.</li></ol>`;
+  else if (isAndroid) how = "<ol><li>Tap the <b>⋮</b> menu at the top right of Chrome.</li><li>Tap <b>Install app</b> or <b>Add to Home screen</b>.</li></ol>";
+  else { card.hidden = true; return; } // computers: nothing to install
+  $("installHow").innerHTML = how; card.hidden = false;
+}
+window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); installEvt = e; drawInstall(); });
+window.addEventListener("appinstalled", () => { installEvt = null; $("installCard").hidden = true; toast("Installed. Look for Quieting on your home screen."); });
+$("installBtn").addEventListener("click", async () => { if (!installEvt) return; installEvt.prompt(); try { await installEvt.userChoice; } catch {} installEvt = null; drawInstall(); });
+$("installLater").addEventListener("click", () => { store.set("tq-install-later", Date.now() + 7 * 864e5); $("installCard").hidden = true; });
+$("shareApp").addEventListener("click", async () => {
+  const url = location.origin + location.pathname;
+  const text = "A guided Thought Quieting exercise. Open the link, then add it to your home screen.";
+  if (navigator.share) { try { await navigator.share({ title: "Thought Quieting", text, url }); } catch {} }
+  else { try { await navigator.clipboard.writeText(url); toast("Link copied. Paste it in a text to share."); } catch { toast(url); } }
+});
+
+$("ver").textContent = "v" + VERSION;
 renderHome();
-if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(() => {});
+drawInstall();
+if ("serviceWorker" in navigator && location.protocol === "https:") {
+  // A new version takes over by itself; reload onto it unless they're in the middle of something.
+  const hadOne = !!navigator.serviceWorker.controller;
+  navigator.serviceWorker.addEventListener("controllerchange", () => { if (hadOne && !S && !viewing) location.reload(); });
+  navigator.serviceWorker.register("sw.js").then(r => document.addEventListener("visibilitychange", () => { if (!document.hidden) r.update().catch(() => {}); })).catch(() => {});
+}
 </script>
 </body>
 </html>
