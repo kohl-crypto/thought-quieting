@@ -39,6 +39,11 @@ If you're recording when time runs out, it waits for you to finish. Settings can
   The tone pairings come from sound-healing tradition, not research. Keep it barely audible.
 - **Record answers:** record or type what you say; your words are written out as you speak where the phone supports it.
 
+**Voice** is off by default. Turn on *Read each question aloud* in Settings to have each question read out.
+The app picks the most natural-sounding voice on the phone, and you can choose another and tap **Hear it** to try it.
+On iPhone, the best voices are a free download: Settings → Accessibility → Spoken Content → Voices → English,
+then pick one marked *Enhanced* or *Premium*.
+
 The **mute** button (top right during the exercise, or Silent mode in Settings) turns off the voice, chime,
 vibration and sound all at once.
 

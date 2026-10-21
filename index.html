@@ -76,6 +76,9 @@ details p{font-size:15px;color:var(--muted);margin:6px 0 8px}
 .seg button[aria-pressed="true"]{background:var(--card);color:var(--ink);box-shadow:var(--shadow)}
 .switch{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:44px}
 .switch input{width:22px;height:22px;accent-color:var(--accent)}
+.voicepick{display:flex;gap:8px;align-items:center;margin:4px 0 6px}
+.voicepick select{flex:1;min-width:0;min-height:44px;font:inherit;padding:0 8px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:inherit}
+.voicepick .btn{min-height:44px;white-space:nowrap}
 .hist button{display:flex;width:100%;justify-content:space-between;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--line);text-align:left}
 .hist button:first-child{border-top:0}
 .hist .when{font-weight:600}
@@ -203,7 +206,14 @@ textarea:focus,button:focus-visible{outline:2px solid var(--accent);outline-offs
       <button data-t="4">4 min each</button>
       <button data-t="5">5 min each</button>
     </div>
-    <label class="switch" style="margin-top:10px"><span>Read each question aloud</span><input type="checkbox" id="optSpeak" checked></label>
+    <label class="switch" style="margin-top:10px"><span>Read each question aloud</span><input type="checkbox" id="optSpeak"></label>
+    <div id="voiceRow" hidden>
+      <div class="voicepick">
+        <select id="optVoice" aria-label="Voice"></select>
+        <button class="btn" id="voiceTry" type="button">Hear it</button>
+      </div>
+      <p class="muted small" id="voiceTip"></p>
+    </div>
     <label class="switch"><span>Chime and vibrate between steps</span><input type="checkbox" id="optChime" checked></label>
     <label class="switch"><span>Keep the screen on</span><input type="checkbox" id="optWake" checked></label>
     <label class="switch"><span>Silent mode: no voice, chime, vibration or sound</span><input type="checkbox" id="optMute"></label>
@@ -331,7 +341,7 @@ textarea:focus,button:focus-visible{outline:2px solid var(--accent);outline-offs
 
 <script>
 "use strict";
-const VERSION = "1.1.1";
+const VERSION = "1.2.0";
 
 // The exercise, in our own words. Minutes are the book's timings.
 // weight: where the 0-10 "how heavy" check sits, so logic and time with Jesus can be compared.
@@ -407,7 +417,8 @@ const idb = (() => {
   };
 })();
 
-const settings = Object.assign({ timing: "book", speak: true, chime: true, wake: true, mute: false, vol: 0.3 }, store.get("tq-settings", {}));
+const settings = Object.assign({ timing: "book", speak: false, voice: "", chime: true, wake: true, mute: false, vol: 0.3 }, store.get("tq-settings", {}));
+if (!settings.v12) { settings.speak = false; settings.v12 = true; store.set("tq-settings", settings); } // before 1.2 the voice was on by default
 settings.ex = Object.assign({ checkin: true, weigh: true, sound: true, record: true }, settings.ex);
 const EX = { Checkin: "checkin", Weigh: "weigh", Sound: "sound", Record: "record" };
 const saveSettings = () => store.set("tq-settings", settings);
@@ -443,7 +454,7 @@ function renderHome() {
   $("stepsList").innerHTML = STEPS.map((s, i) =>
     `<li><span class="n">${i + 1}</span><span><b>${s.title}</b>${s.rec && settings.ex.record ? ' <span class="mic" title="You can record your answer" aria-label="you can record">🎙</span>' : ""}</span><span class="t">${stepMin(s)} min</span></li>`).join("");
   document.querySelectorAll("#timingSeg button").forEach(b => b.setAttribute("aria-pressed", b.dataset.t === settings.timing));
-  $("optSpeak").checked = settings.speak; $("optChime").checked = settings.chime; $("optWake").checked = settings.wake; $("optMute").checked = settings.mute;
+  $("optSpeak").checked = settings.speak; drawVoices(); $("optChime").checked = settings.chime; $("optWake").checked = settings.wake; $("optMute").checked = settings.mute;
   Object.entries(EX).forEach(([k, key]) => $("ex" + k).checked = settings.ex[key]);
   const list = sessions();
   $("histCard").hidden = !list.length;
@@ -454,7 +465,9 @@ function renderHome() {
 }
 
 $("timingSeg").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; settings.timing = b.dataset.t; saveSettings(); renderHome(); });
-["Speak", "Chime", "Wake"].forEach(k => $("opt" + k).addEventListener("change", e => { settings[k.toLowerCase()] = e.target.checked; saveSettings(); }));
+["Speak", "Chime", "Wake"].forEach(k => $("opt" + k).addEventListener("change", e => { settings[k.toLowerCase()] = e.target.checked; saveSettings(); drawVoices(); }));
+$("optVoice").addEventListener("change", e => { settings.voice = e.target.value; saveSettings(); sample(); });
+$("voiceTry").addEventListener("click", sample);
 $("optMute").addEventListener("change", e => setMute(e.target.checked));
 Object.entries(EX).forEach(([k, key]) => $("ex" + k).addEventListener("change", e => { settings.ex[key] = e.target.checked; saveSettings(); renderHome(); }));
 $("hist").addEventListener("click", e => { const b = e.target.closest("button[data-id]"); if (b) showSummary(sessions().find(s => s.id === b.dataset.id), true); });
@@ -489,9 +502,58 @@ function chime() {
     });
   } catch {}
 }
+// Voice: phones ship several; the default is often the most robotic. Rank them and use the most natural one.
+const CAN_SPEAK = !!(window.speechSynthesis && window.SpeechSynthesisUtterance);
+const NOVELTY = /\b(albert|bad news|bahh|bells|boing|bubbles|cellos|good news|jester|organ|superstar|trinoids|whisper|wobble|zarvox|junior|ralph|fred|kathy|eddy|flo|grandma|grandpa|reed|rocko|sandy|shelley)\b/i;
+function voiceScore(v) {
+  const n = v.name, lang = (v.lang || "").toLowerCase().replace("_", "-"), mine = (navigator.language || "en-US").toLowerCase();
+  let s = 0;
+  if (/natural|neural/i.test(n)) s += 100;
+  if (/premium/i.test(n)) s += 90;
+  if (/siri/i.test(n)) s += 80;
+  if (/enhanced/i.test(n)) s += 70;
+  if (/online|network/i.test(n) || v.localService === false) s += 40;
+  if (/google/i.test(n)) s += 30;
+  if (/\b(ava|samantha|allison|susan|zoe|evan|nathan|tom|karen|daniel|serena|moira|jenny|aria|emma|libby|sonia)\b/i.test(n)) s += 15;
+  if (lang === mine) s += 20; else if (lang.startsWith("en-us")) s += 10;
+  if (NOVELTY.test(n)) s -= 1000;
+  return s;
+}
+function voices() {
+  if (!CAN_SPEAK) return [];
+  try { return speechSynthesis.getVoices().filter(v => /^en/i.test(v.lang)).sort((a, b) => voiceScore(b) - voiceScore(a)); } catch { return []; }
+}
+function pickVoice() { const vs = voices(); return vs.find(v => v.voiceURI === settings.voice) || vs[0] || null; }
+const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+function drawVoices() {
+  const row = $("voiceRow"); if (!row) return;
+  row.hidden = !settings.speak || !CAN_SPEAK;
+  if (row.hidden) return;
+  const vs = voices(), cur = pickVoice();
+  $("optVoice").innerHTML = vs.length
+    ? vs.map((v, i) => `<option value="${esc(v.voiceURI)}">${esc(v.name.replace(/^(Microsoft|Google)\s+/, "").replace(/\s*-\s*English.*$/, ""))}${i === 0 ? " (recommended)" : ""}</option>`).join("")
+    : `<option value="">Phone’s default voice</option>`;
+  if (cur) $("optVoice").value = cur.voiceURI;
+  const best = vs[0] && voiceScore(vs[0]) >= 70;
+  $("voiceTip").textContent = IS_IOS && !best
+    ? "For a more natural voice, download one on your iPhone: Settings → Accessibility → Spoken Content → Voices → English, then pick a voice marked Enhanced or Premium. Reopen this app afterwards." : "";
+  $("voiceTip").hidden = !$("voiceTip").textContent;
+}
+if (CAN_SPEAK) try { speechSynthesis.addEventListener("voiceschanged", drawVoices); } catch {}
+
+function speak(text) {
+  try {
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text), v = pickVoice();
+    if (v) { u.voice = v; u.lang = v.lang; }
+    u.rate = 0.9; u.pitch = 1;
+    speechSynthesis.speak(u);
+  } catch {}
+}
+function sample() { if (CAN_SPEAK) speak("Take a slow breath. When you’re ready, we’ll begin."); }
 function say(text) {
-  if (settings.mute || !settings.speak || !window.speechSynthesis) return;
-  try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text); u.rate = 0.92; speechSynthesis.speak(u); } catch {}
+  if (settings.mute || !settings.speak || !CAN_SPEAK) return;
+  speak(text);
 }
 
 // Background sound: a soft sine tone or gentle white noise, faded in and kept low.
